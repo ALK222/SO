@@ -12,17 +12,17 @@ do
         if [ "$dirna" = "$homecomp" ];
         then
             echo -e "[Entry #$it]"
-            echo -e "    login=$login"
-            echo -e "    enc_pass=$pass"
-            echo -e "    uid=$uid"
-            echo -e "    gid=$guid"
-            echo -e "    user_name=$user"
-            echo -e "    home=$home"
-            echo -e "    shell=$shell"
+            echo -e "\tlogin=$login"
+            echo -e "\tenc_pass=$pass"
+            echo -e "\tuid=$uid"
+            echo -e "\tgid=$guid"
+            echo -e "\tuser_name=$user"
+            echo -e "\thome=$home"
+            echo -e "\tshell=$shell"
             ((it++))
         fi
     fi
     
 done < /etc/passwd
 
-# OPCIONAL: cat /etc/passwd | cut -d \: -f 6 | grep /home
+# OPCIONAL: cut -d \: -f 6 /etc/passwd | grep /home
