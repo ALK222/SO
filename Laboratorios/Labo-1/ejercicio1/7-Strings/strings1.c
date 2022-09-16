@@ -7,20 +7,17 @@
  * Soluciona el error comentando la(s) línea(s) afectadas. Vuelve a compilar y ejecutar.
  * 2. ¿En qué dirección está la letra 'B' de la cadena Bonjour? ¿Y la de la la letra 'j'?
  * 3. Tras la asignación p=msg2;, ¿cómo podemos recuperar la dirección de la cadena "Bonjour"?
- * 4. ¿Por qué la longitud de las cadenas p y msg2 es 2 tras la tercera asignación?
+ * 4. ¿Por qué la longitud de las cadenas p y msg2 es 2 tras la línea 30?
  *    Se asignan 3 bytes a 'p' que modifican a ambos, pero luego la longitud es sólo 2.
  * 5. ¿Por qué strlen() devuelve un valor diferente a sizeof()?
- * 6. ¿Por qué la cadena que se almacena en "msg" en la línea 37 se muestra de forma incorrecta en el printf() final?
  ************** */
 int main()
 {
-
 	char msg[10]; /* array of 10 chars */
-	char *p;	  /* pointer to a char */
+	char *p;      /* pointer to a char */
+	char msg2[28] = "Hello";  /* msg2 = 'H' 'e' 'l' 'l' 'o' '\0' */
 
-	char msg2[28] = "Hello"; /* msg2 = 'H' 'e' 'l' 'l' 'o' '\0' */
-
-	p = "Bonjour";
+	p   = "Bonjour";
 	printf("msg: %s, p: %s, msg2: %s\n", msg, p, msg2);
 	printf("dir de msg: %p, dir de p: %p, dir de msg2: %p\n", msg, p, msg2);
 
@@ -35,7 +32,5 @@ int main()
 
 	msg[0] = 'B', msg[1] = 'y';
 	printf("msg: %s, p: %s, msg2: %s\n", msg, p, msg2);
-
-	msg = "Goodbye";
-	printf("msg: %s, p: %s, msg2: %s\n", msg, p, msg2);
 }
+
