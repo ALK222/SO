@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <errno.h>
@@ -24,7 +25,7 @@ pthread_t id_hilo = pthread_self();
 printf("El  pid es %lu, en num hilo es %d, y la prioridad es %c \n",argumentos->hilo, argumentos->num_Hilo, argumentos->prio);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 
 	//pthread_t hilo;
