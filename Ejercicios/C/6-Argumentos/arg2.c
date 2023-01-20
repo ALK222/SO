@@ -5,7 +5,7 @@
  * 1. ¿Por qué cambia el valor de 'y' tras la llamada a suma()?
  * 2. ¿Por qué en ocasiones se usa el operador '.' y en otras '->' para acceder a los campos de una estructura?
  * 3. ¿Por qué el valor de zc pasa a ser incorrecto sin volver a usarlo en el código?
- * 4. Corrije el código para evitar el error producido en zc
+ * 4. Corrige el código para evitar el error producido en zc
  *******************/
 /* Tipo estructurado */
 struct _complex_

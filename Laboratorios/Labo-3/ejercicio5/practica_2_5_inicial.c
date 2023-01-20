@@ -21,7 +21,6 @@ int main(void)
         { /* Parent */
             if (i < 9)
             {
-                printf("coso\n");
                 write(fd1, "00000", 5);
 
                 lseek(fd1, 0, SEEK_CUR);
