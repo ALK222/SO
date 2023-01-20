@@ -53,6 +53,8 @@ void *enter_vip_client(int id)
     {
         pthread_cond_wait(&club_lleno_vip, &m);
     }
+    pthread_cond_broadcast(&club_lleno_vip);
+    pthread_cond_broadcast(&club_lleno_normal);
     vips_restantes--;
     pthread_mutex_unlock(&m);
 }
@@ -63,7 +65,7 @@ void *enter_normal_client(int id)
     nTicketNormal++;            // ""Creamos"" el siguiente ticket
     turnoNormal++;
     pthread_mutex_lock(&m);
-    while (aforo == gente || ticket == turnoNormal)
+    while (aforo == gente || ticket == turnoNormal || vips_restantes > 0)
     {
         pthread_cond_wait(&club_lleno_normal, &m);
     }
