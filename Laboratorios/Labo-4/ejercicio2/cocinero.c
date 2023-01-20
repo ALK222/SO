@@ -5,56 +5,69 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <semaphore.h>
+#include <signal.h>
 
 #define MAX_BUFFER 1024 /*tamaño del buffer*/
-#define RACIONES 1000   /*Datos a producir*/
+#define RACIONES 10     /*Datos a producir*/
 
-sem_t *elements; // Elementos en el buffer
-sem_t *holes; //huecos en el buffer
+int finish = 0;
+int *buffer;
+sem_t *raciones; // Elementos en el buffer
+sem_t *vacio;    // huecos en el buffer
 
-int putServingsInPot()
+void putServingsInPot(int servings)
 {
-    int r = random() % 100;
-    return r;
+    for (int i = 0; i < servings; ++i)
+    {
+        *buffer += 1;
+        sem_post(raciones);
+    }
+    printf("%d rations served by %d\n", *buffer, getpid());
 }
 
-void Cocinero(int *buffer)
+void Cocinero()
 {
-    int pos = 0;
-    int dato;
-    int i;
-    for(i = 0; i < RACIONES; i++){
-        dato = putServingsInPot();
-        buffer[pos] = dato;
-        pos = (pos+1) %MAX_BUFFER;
-        sem_post(elements);
-
+    while (!finish)
+    {
+        putServingsInPot(RACIONES);
+        sem_wait(vacio);
     }
+}
+
+void handler(int s)
+{
+    finish = 1;
+    sem_post(vacio);
+    printf("\n");
 }
 
 int main(int argc, char *argv[])
 {
-    //Aqui preparamos el buffer y los semaforos para producir
-    int shd, *bff;
+    // Aqui preparamos el buffer y los semaforos para producir
+    int shd;
 
-    shd = open("BUFFER", O_CREAT|O_RDWR, 0700);
-    ftruncate(shd, MAX_BUFFER *sizeof(int));
-    
-    bff = (int*)mmap(NULL,MAX_BUFFER *sizeof(int), PROT_WRITE, MAP_SHARED, shd,0);
-    elements = sem_open("/ELEMENTS", O_CREAT, 0700,0);
-    holes = sem_open("/HOLES", O_CREAT, 0700,MAX_BUFFER);
-    //llamamos a cocinero para que cree todas las raciones necesarias hasta llenar
-    Cocinero(bff);
-    //una vez relleno se procede a desmapear y cerrar los semaforos
+    signal(SIGINT, handler);
+    signal(SIGTERM, handler);
 
-    munmap(bff, MAX_BUFFER *sizeof(int));
+    shd = shm_open("/BUFFER", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    ftruncate(shd, MAX_BUFFER * sizeof(int));
+
+    buffer = (int *)mmap(NULL, MAX_BUFFER * sizeof(int), PROT_WRITE, MAP_SHARED, shd, 0);
+    *buffer = 0;
+
+    raciones = sem_open("/RACIONES", O_CREAT, 0700, 0);
+    vacio = sem_open("/VACIO", O_CREAT, 0700, 0);
+    // llamamos a cocinero para que cree todas las raciones necesarias hasta llenar
+    Cocinero();
+    // una vez relleno se procede a desmapear y cerrar los semaforos
+
+    munmap(buffer, MAX_BUFFER * sizeof(int));
     close(shd);
-    unlink("BUFFER");
-    sem_close(elements);
-    sem_close(holes);
-    sem_unlink("/ELEMENTS");
-    sem_unlink("/HOLES");
-
+    unlink("/BUFFER");
+    sem_close(vacio);
+    sem_close(raciones);
+    sem_unlink("/RACIONES");
+    sem_unlink("/VACIO");
 
     exit(EXIT_SUCCESS);
 }

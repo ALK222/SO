@@ -8,42 +8,57 @@
 #include <sys/mman.h>
 
 #define MAX_BUFFER 1024 // tamanno del buff
-#define RACIONES 1000
+#define RACIONES 100
 
-sem_t *elements; //Elementos del buffer
-sem_t *holes; //Huecos en el buff;
+int *buffer;
+sem_t *raciones; // Elementos del buffer
+sem_t *vacio;    // Huecos en el buff;
 
-void eat(int dato){
-    printf("se ha comido %d \n", dato);
-
+void eat()
+{
+    printf("%lu comiendo.\n", getpid());
+    sleep(rand() % 2);
 }
-void getServingFromPot(int *buffer){
-    int pos = 0;
-    int i, dato;
-    for(i = 0; i < RACIONES; i++){
-        sem_wait(elements);
-        dato=buffer[pos];
-        pos = (pos+1) %MAX_BUFFER;
-        sem_post(holes);
-        eat(dato);
+void getServingFromPot()
+{
+    if (*buffer <= 1)
+    {
+        sem_post(vacio);
+    }
+    sem_wait(raciones);
+    *buffer -= 1;
+    printf("%lu eats. %d servings in pot.\n", getpid(), *buffer);
+}
+
+void Savages()
+{
+    for (int i = 0; i < RACIONES; i++)
+    {
+        getServingFromPot();
+        eat();
     }
 }
 
 int main(int argc, char *argv[])
 {
-    //CREAR Y ABRIR LOS SEMAFOROS 
-    int shd, *buffer;
-    shd= open("BUFFER", O_RDONLY);
-    buffer= (int*) mmap(NULL,MAX_BUFFER * sizeof(int), PROT_READ, MAP_SHARED, shd,0);
-    elements= sem_open("/ELEMENTS",0),
-    holes = sem_open("/HOLES",0);
-    //LOs salvajes comen
-    getServingFromPot(buffer);
+    // CREAR Y ABRIR LOS SEMAFOROS
+    int shd;
+    if ((shd = shm_open("/BUFFER", O_RDWR, S_IRUSR | S_IWUSR)) == -1)
+    {
+        perror("Open cooker first");
+        return -1;
+    }
+    buffer = (int *)mmap(NULL, MAX_BUFFER * sizeof(int), PROT_WRITE, MAP_SHARED, shd, 0);
+    raciones = sem_open("/RACIONES", 0),
+    vacio = sem_open("/VACIO", 0);
+
+    // LOs salvajes comen
+    Savages();
 
     // SE CIERRAN LOS SEMAFOROS y memoria compartida
     munmap(buffer, MAX_BUFFER * sizeof(int));
     close(shd);
-    sem_close(elements);
-    sem_close(holes);
+    sem_close(raciones);
+    sem_close(vacio);
     exit(EXIT_SUCCESS);
 }
